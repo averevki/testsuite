@@ -1,9 +1,16 @@
-name: Build and push image
+name: Build and push latest images
 
 on:
   push:
     tags:
-      - v*
+      - "v[0-9]+\.[0-9]+\.[0-9]+"
+  workflow_dispatch:
+    inputs:
+      custom_tag:
+        description: 'New version to tag and push image (in SemVer)'
+        required: true
+        default: 'v0.0.0'
+
 
 env:
   IMG_REGISTRY_HOST: quay.io
@@ -11,25 +18,20 @@ env:
   IMG_NAME: testsuite
 
 jobs:
-  build:
+  build-latest:
     name: Build and push image
     runs-on: ubuntu-latest
+    env:
+      # Choose tag input based on this workflow trigger type
+      IMG_TAGS: ${{ github.event_name == 'workflow_dispatch' && inputs.custom_tag || github.ref_name }} latest
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-      - name: Add tag name
-        id: tag-name
+      - name: Create Git tag
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
-          echo "IMG_TAGS=$(echo ${{ github.ref_name }} | sed -r 's/(v)(.*)/\2/')" >> $GITHUB_ENV
-      - name: Format version
-        id: format-version
-        run: |
-          echo "IMG_TAGS=${{ env.IMG_TAGS }} $(echo ${{ env.IMG_TAGS }} | sed -r 's/(.*)(\.[0-9]*)(.*)/\1/')" >> $GITHUB_ENV
-      - name: Add latest tag
-        if: ${{ !contains(github.ref_name, 'rc') }}
-        id: add-latest-tag
-        run: |
-          echo "IMG_TAGS=latest ${{ env.IMG_TAGS }}" >> $GITHUB_ENV
+          git tag ${{ inputs.custom_tag }}
+          git push origin ${{ inputs.custom_tag }}
       - name: Build Image
         id: build-image
         uses: redhat-actions/buildah-build@v2
@@ -50,5 +52,12 @@ jobs:
           registry: ${{ env.IMG_REGISTRY_HOST }}/${{ env.IMG_REGISTRY_ORG }}
           username: ${{ secrets.IMG_REGISTRY_USERNAME }}
           password: ${{ secrets.IMG_REGISTRY_TOKEN }}
-      - name: Print Image URL
-        run: echo "Image pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
+      - name: 'Build Changelog'
+        id: build_changelog
+        uses: mikepenz/release-changelog-builder-action@v4
+        with:
+        token: '${{ github.token }}'
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ${{ steps.build_changelog.outputs.changelog }}
