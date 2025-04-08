@@ -1,4 +1,4 @@
-name: Build and push image
+name: Build and push unstable images
 
 on:
   push:
@@ -9,11 +9,11 @@ env:
   IMG_REGISTRY_HOST: quay.io
   IMG_REGISTRY_ORG: kuadrant
   IMG_NAME: testsuite
-  IMG_TAGS: unstable
+  IMG_TAGS: unstable ${{ github.sha }}
 
 jobs:
-  build:
-    name: Build and push image
+  build-unstable:
+    name: Build and push unstable image
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -29,7 +29,6 @@ jobs:
           containerfiles: |
             ./Dockerfile
       - name: Push Image
-        if: ${{ !env.ACT }}
         id: push-to-quay
         uses: redhat-actions/push-to-registry@v2
         with:
