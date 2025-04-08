@@ -31,7 +31,7 @@ black: poetry
 reformat: poetry  ## Reformats testsuite with black
 	poetry run black testsuite
 
-# pattern to run individual testfile or all testfiles in directory
+# pattern to run individual testfile or all  in directory
 testsuite/%: FORCE poetry-no-dev
 	$(PYTEST) -v $(flags) $@
 
