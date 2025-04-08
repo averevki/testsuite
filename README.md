@@ -12,7 +12,7 @@ This repository contains end-to-end tests for Kuadrant project. It supports runn
 ### Service Protection tests
 * Kubernetes cluster
 * Kuadrant Operator installed
-* Use `test` make target
+* Use `test` make
 
 ### DNSPolicy tests
 * Existing DNS provider Secret named `aws-credentials` (name defined in `control_plane.provider_secret`) with annotation containing the base domain. Example AWS provider Secret:
