@@ -18,7 +18,7 @@ jobs:
           TARGET=$(echo "${{ github.event.comment.body }}" | awk '{print $2}')
           
           # Validate target
-          ALLOWED_TARGETS="test kuadrant authorino authorino-standalone dnstls"
+          ALLOWED_TARGETS="test kuadrant authorino authorino-standalone dnstls smoke"
           if [[ ! " ${ALLOWED_TARGETS} " =~ " ${TARGET} " ]]; then
             echo "::error::Invalid target '${TARGET}'. Allowed targets: ${ALLOWED_TARGETS}"
             exit 1
