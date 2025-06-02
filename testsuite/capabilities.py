@@ -37,9 +37,9 @@ def kuadrant_version():
         project = cluster.change_project(settings["service_protection"]["system_project"])
         if not project.connected:
             break
-        with project.context:
-            catalog_source = selector("CatalogSource/kuadrant-upstream").object(ignore_not_found=True)
-            if catalog_source is None:
-                break
-            versions.append((catalog_source.as_dict()["spec"]["image"], cluster.api_url))
+        # with project.context:
+        #     catalog_source = selector("CatalogSource/kuadrant-upstream").object(ignore_not_found=True)
+        #     if catalog_source is None:
+        #         break
+        #     versions.append((catalog_source.as_dict()["spec"]["image"], cluster.api_url))
     return versions
