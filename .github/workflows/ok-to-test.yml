@@ -95,6 +95,7 @@ jobs:
         run: |
           helm repo add kuadrant https://kuadrant.io/helm-charts/ --force-update
           helm install kuadrant-operator kuadrant/kuadrant-operator --create-namespace --namespace kuadrant-system
+          kubectl -n kuadrant-system wait --timeout=300s --for=condition=Available deployments --all
 
       - name: Add kuadrant-sample
         run: |
@@ -107,8 +108,6 @@ jobs:
           spec: {}
           EOF
           
-          sleep 10
-          kubectl get kuadrant/kuadrant-sample -n kuadrant-system -o yaml
           kubectl wait kuadrant/kuadrant-sample --for=condition=Ready=True -n kuadrant-system
 
 #      - name: Restart Kuadrant Operator
