@@ -107,6 +107,8 @@ jobs:
           spec: {}
           EOF
           
+          sleep 10
+          kubectl get kuadrant/kuadrant-sample -n kuadrant-system -o yaml
           kubectl wait kuadrant/kuadrant-sample --for=condition=Ready=True -n kuadrant-system
 
 #      - name: Restart Kuadrant Operator
