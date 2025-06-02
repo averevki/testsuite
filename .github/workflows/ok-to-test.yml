@@ -107,7 +107,7 @@ jobs:
           spec: {}
           EOF
           
-          oc wait kuadrant/kuadrant-sample --for=condition=Ready=True -n kuadrant-system
+          kubectl wait kuadrant/kuadrant-sample --for=condition=Ready=True -n kuadrant-system
 
 #      - name: Restart Kuadrant Operator
 #        run: kubectl rollout restart deployment kuadrant-operator-controller-manager -n kuadrant-system
