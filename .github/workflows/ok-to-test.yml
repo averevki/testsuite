@@ -90,7 +90,11 @@ jobs:
         run: |
           kubectl create namespace kuadrant
           kubectl create namespace kuadrant2
-          kubectl create namespace kuadrant-system || true
+
+      - name: Deploy Kuadrant
+        run: |
+          helm repo add kuadrant https://kuadrant.io/helm-charts/ --force-update
+          helm install kuadrant-operator kuadrant/kuadrant-operator --create-namespace --namespace kuadrant-system
 
       - name: Add kuadrant-sample
         run: |
@@ -102,6 +106,8 @@ jobs:
             namespace: kuadrant-system
           spec: {}
           EOF
+          
+          oc wait kuadrant/kuadrant-sample --for=condition=Ready=True -n kuadrant-system
 
 #      - name: Restart Kuadrant Operator
 #        run: kubectl rollout restart deployment kuadrant-operator-controller-manager -n kuadrant-system
