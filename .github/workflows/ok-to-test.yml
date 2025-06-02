@@ -113,43 +113,43 @@ jobs:
 #      - name: Restart Kuadrant Operator
 #        run: kubectl rollout restart deployment kuadrant-operator-controller-manager -n kuadrant-system
 
-#      - name: Run Make target
-#        run: make ${{ steps.extract-target.outputs.target }}
+      - name: Run Make target
+        run: make ${{ steps.extract-target.outputs.target }}
 
-      - name: Run Make target and capture output
-        id: test-run
-        run: |
-          # Run tests and capture output
-          TEST_OUTPUT=$(make ${{ steps.extract-target.outputs.target }} 2>&1)
-          
-          # Extract test results (assuming pytest output format)
-          TEST_RESULTS=$(echo "$TEST_OUTPUT" | grep -E '[0-9]+ passed|[0-9]+ failed' || true)
-          
-          # Save output and results
-          echo "test_output<<EOF" >> $GITHUB_OUTPUT
-          echo "$TEST_OUTPUT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          echo "test_results=${TEST_RESULTS:-No test results found}" >> $GITHUB_OUTPUT
-          
-          # Print output for logs
-          echo "$TEST_OUTPUT"
+#      - name: Run Make target and capture output
+#        id: test-run
+#        run: |
+#          # Run tests and capture output
+#          TEST_OUTPUT=$(make ${{ steps.extract-target.outputs.target }} 2>&1)
+#
+#          # Extract test results (assuming pytest output format)
+#          TEST_RESULTS=$(echo "$TEST_OUTPUT" | grep -E '[0-9]+ passed|[0-9]+ failed' || true)
+#
+#          # Save output and results
+#          echo "test_output<<EOF" >> $GITHUB_OUTPUT
+#          echo "$TEST_OUTPUT" >> $GITHUB_OUTPUT
+#          echo "EOF" >> $GITHUB_OUTPUT
+#          echo "test_results=${TEST_RESULTS:-No test results found}" >> $GITHUB_OUTPUT
+#
+#          # Print output for logs
+#          echo "$TEST_OUTPUT"
 
-      - name: Comment test results on PR
-        uses: actions/github-script@v6
-        if: always()
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const output = `Test run completed for target \`${{ steps.extract-target.outputs.target }}\`:
-            \`\`\`
-            ${{ steps.test-run.outputs.test_results }}
-            \`\`\`
-            
-            Full logs available in the workflow run.`;
-            
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            });
+#      - name: Comment test results on PR
+#        uses: actions/github-script@v6
+#        if: always()
+#        with:
+#          github-token: ${{ secrets.GITHUB_TOKEN }}
+#          script: |
+#            const output = `Test run completed for target \`${{ steps.extract-target.outputs.target }}\`:
+#            \`\`\`
+#            ${{ steps.test-run.outputs.test_results }}
+#            \`\`\`
+#
+#            Full logs available in the workflow run.`;
+#
+#            await github.rest.issues.createComment({
+#              issue_number: context.issue.number,
+#              owner: context.repo.owner,
+#              repo: context.repo.repo,
+#              body: output
+#            });
