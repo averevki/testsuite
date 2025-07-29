@@ -1,0 +1,99 @@
+name: Kuadrant PR Tests
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  kuadrant-test:
+    if: |
+      github.event.issue.pull_request && 
+      startsWith(github.event.comment.body, '/run ')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract and validate Make target
+        id: extract-target
+        run: |
+          # Extract target from comment
+          TARGET=$(echo "${{ github.event.comment.body }}" | awk '{print $2}')
+          
+          # Validate target
+          ALLOWED_TARGETS="test kuadrant authorino authorino-standalone dnstls"
+          if [[ ! " ${ALLOWED_TARGETS} " =~ " ${TARGET} " ]]; then
+            echo "::error::Invalid target '${TARGET}'. Allowed targets: ${ALLOWED_TARGETS}"
+            exit 1
+          fi
+          
+          echo "target=${TARGET}" >> $GITHUB_OUTPUT
+          echo "Running make ${TARGET}"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24'
+
+      - name: Create KIND cluster
+        uses: helm/kind-action@v1
+        with:
+          version: "v0.27.0"
+
+      - name: Install metrics-server
+        run: |
+          kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+          kubectl patch deployment metrics-server -n kube-system --type=json -p '[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+
+      - name: Install MetalLB
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.12/config/manifests/metallb-native.yaml
+          kubectl wait --namespace metallb-system --for=condition=ready pod --selector=app=metallb --timeout=90s
+          echo "apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            namespace: metallb-system
+            name: config
+          data:
+            config: |
+              address-pools:
+              - name: default
+                protocol: layer2
+                addresses:
+                - 172.18.255.200-172.18.255.250" | kubectl apply -f -
+
+      - name: Install Gateway API CRDs
+        run: kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
+
+      - name: Install cert-manager
+        run: |
+          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.3/cert-manager.yaml
+          kubectl wait --namespace cert-manager --for=condition=Available deployment/cert-manager --timeout=120s
+
+      - name: Install Sail Operator
+        run: |
+          helm repo add sail-operator https://istio-ecosystem.github.io/sail-operator
+          helm install sail-operator \
+            --create-namespace \
+            --namespace istio-system \
+            --wait \
+            --timeout=300s \
+            sail-operator/sail-operator \
+            --version 1.0.0
+
+      - name: Create Istio objects
+        run: |
+          # Add your Istio CRDs/objects here
+          echo "Apply your Istio custom resources"
+
+      - name: Restart Kuadrant Operator
+        run: kubectl rollout restart deployment kuadrant-operator-controller-manager -n kuadrant-system
+
+      - name: Create namespaces
+        run: |
+          kubectl create namespace kuadrant
+          kubectl create namespace kuadrant2
+          kubectl create namespace kuadrant-system || true
+
+      - name: Run Make target
+        run: make ${{ steps.extract-target.outputs.target }}

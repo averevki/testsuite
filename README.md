@@ -7,7 +7,7 @@ This repository contains end-to-end tests for Kuadrant project. It supports runn
 ### Authorino standalone tests
 * Kubernetes cluster
 * Authorino Operator installed
-* Use `authorino-standalone` make target
+* Use `authorino-standalone` make  target
 
 ### Service Protection tests
 * Kubernetes cluster
