@@ -75,7 +75,7 @@ jobs:
 
       - name: Install Sail Operator
         run: |
-          helm repo add sail-operator https://istio-ecosystem.github.io/sail-operator
+          helm repo add sail-operator https://istio-ecosystem.github.io/sail-operator --force-update
           helm install sail-operator \
             --create-namespace \
             --namespace istio-system \
@@ -87,7 +87,7 @@ jobs:
       - name: Create Istio objects
         run: |
           kubectl apply -f - <<EOF
-          apiVersion: sailoperator.io/v1alpha1
+          apiVersion: sailoperator.io/v1
           kind: Istio
           metadata:
             name: default
@@ -152,7 +152,9 @@ jobs:
       - name: Deploy testsuite tools
         run: |
           kubectl create namespace tools
-          helm install --repo https://kuadrant.io/helm-charts-olm --set=tools.keycloak.keycloakProvider=deployment --set=tools.redis.enable=false --set=tools.dragonfly.enable=false --set=tools.valkey.enable=false --wait --timeout=10m0s tools tools-instances
+          helm repo add testsuite https://kuadrant.io/helm-charts-olm --force-update
+          helm install testsuite --set=tools.keycloak.keycloakProvider=deployment --set=tools.redis.enable=false --set=tools.dragonfly.enable=false --set=tools.valkey.enable=false --wait --timeout=30m0s testsuite/tools-instances
+#          helm install --repo https://kuadrant.io/helm-charts-olm --set=tools.keycloak.keycloakProvider=deployment --set=tools.redis.enable=false --set=tools.dragonfly.enable=false --set=tools.valkey.enable=false --wait --timeout=10m0s tools tools-instances
 #          kubectl apply -k https://github.com/3scale-qe/tools.git/overlays/kuadrant -n tools
 
 #      - name: Restart Kuadrant Operator
