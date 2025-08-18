@@ -1,6 +1,6 @@
 # Kuadrant E2E testsuite
 
-This repository contains end-to-end tests for Kuadrant project. It supports running tests either against standalone Authorino and Authorino Operator, or the entire Kuadrant, both Service Protection and MGC. For more information about Kuadrant, please visit https://kuadrant.io/
+This repos itory contains end-to-end tests for Kuadrant project. It supports running tests either against standalone Authorino and Authorino Operator, or the entire Kuadrant, both Service Protection and MGC. For more information about Kuadrant, please visit https://kuadrant.io/
 
 ## Requirements
 
