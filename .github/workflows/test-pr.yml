@@ -195,7 +195,7 @@ jobs:
       - name: Deploy testsuite tools
         run: |
           kubectl create namespace tools
-          helm install --repo https://kuadrant.io/helm-charts-olm --set=tools.keycloak.keycloakProvider=deployment --set=tools.redis.enable=false --set=tools.dragonfly.enable=false --set=tools.valkey.enable=false --wait --timeout=10m0s tools tools-instances
+          helm install --repo https://kuadrant.io/helm-charts-olm --set=tools.keycloak.keycloakProvider=deployment --set=tools.redis.enable=false --set=tools.dragonfly.enable=false --set=tools.valkey.enable=false --wait --timeout=20m0s tools tools-instances
 
       - name: Run Make target
         id: run-make
