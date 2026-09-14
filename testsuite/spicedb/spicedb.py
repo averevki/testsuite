@@ -155,10 +155,7 @@ class SpiceDBClient:
         ),
     )
     def wait_for_relationship(self, schema_config: SchemaConfig, relationship_config: RelationshipConfig):
-        """
-        Check if the relationships are ready for use in SpiceDB via HTTP API.
-        Raises TimeoutError if relationships are not ready after retries.
-        """
+        """Polls SpiceDB until the namespace cache reflects the written schema and relationships."""
         response = self.client.post(
             "/v1/permissions/check",
             json={
@@ -175,7 +172,12 @@ class SpiceDBClient:
                 },
             },
         )
-        response.raise_for_status()
+        if not response.is_success:
+            error = response.json()
+            details = error.get("details", [])
+            if any(d.get("reason") == "ERROR_REASON_UNKNOWN_DEFINITION" for d in details):
+                return False
+            response.raise_for_status()
         result = response.json()
         return result.get("permissionship") == "PERMISSIONSHIP_HAS_PERMISSION"
 
